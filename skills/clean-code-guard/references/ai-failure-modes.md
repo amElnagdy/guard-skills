@@ -342,4 +342,4 @@ Nine of the 15 failure modes (1, 2, 3, 9, 12, 14, 15, plus pieces of 8 and 11) t
 
 ## Where this skill differs from generic clean-code rules
 
-Sections in [naming-and-functions.md](naming-and-functions.md), [solid.md](solid.md), and [dry-kiss-yagni.md](dry-kiss-yagni.md) cover the classic principles. They are necessary but not sufficient — an LLM that "knows" SOLID can still produce code that fails for the reasons in this file. The 14 patterns above are the high-leverage check. Walk them before delivery.
+Sections in [naming-and-functions.md](naming-and-functions.md), [solid.md](solid.md), and [dry-kiss-yagni.md](dry-kiss-yagni.md) cover the classic principles. They are necessary but not sufficient — an LLM that "knows" SOLID can still produce code that fails for the reasons in this file. The 15 patterns above are the high-leverage check. Walk them before delivery.
