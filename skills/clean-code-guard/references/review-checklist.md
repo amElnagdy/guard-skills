@@ -25,37 +25,39 @@ Use this template exactly. The headings make findings easy to triage.
 
 ## Summary
 <2–3 sentence verdict: ship / needs work / rewrite>
+Counts: <N> critical, <M> important, <K> nits  (must equal the findings listed below)
 
 ## Critical findings
-<must-fix before merge>
-- **<short title>** — `<file>:<line>`
-  Evidence: <quoted code or behavior>
-  Principle violated: <e.g., LSP, catch-all error swallowing>
-  Suggested fix: <concrete>
+<must-fix before merge; omit this heading if none>
+- `<file>:<line>` — <tag>: <what's wrong> [`<quoted code or behavior>`]. Fix: <concrete change>.
+  <continuation line only when the fix is code-sized>
 
 ## Important findings
-<should fix but not blocking>
+<should fix but not blocking; omit if none>
 - ...
 
 ## Nits
-<style, naming, minor structure>
+<style, naming, minor structure; max 3, each with a fix; omit if none>
 - ...
 
 ## What's good
-<at least 2–3 specific positives — naming, structure, test coverage>
+<0–3 genuine, specific positives; omit on a clean review — do not manufacture praise>
 
-## Self-check coverage
-- [ ] Walked Section A (naming & functions)
-- [ ] Walked Section B (comments & formatting)
-- [ ] Walked Section C (SOLID)
-- [ ] Walked Section D (DRY/KISS/YAGNI)
-- [ ] Walked Section E (AI failure modes)
+## Coverage
+One line per section: the findings it produced, or `clean` (walked it, found nothing). A blank section is an unbacked claim, not a pass — fill it before delivering.
+- Section A (naming & functions): <findings, or `clean`>
+- Section B (comments & formatting): <findings, or `clean`>
+- Section C (SOLID): <findings, or `clean`>
+- Section D (DRY/KISS/YAGNI): <findings, or `clean`>
+- Section E (AI failure modes): <findings, or `clean`>
 ```
 
 Severity:
 - **Critical** — security, correctness, data loss, swallowed exceptions, hardcoded "success" returns.
 - **Important** — design defects with maintenance cost: SOLID violations, premature abstractions, parameter explosion, generic naming.
 - **Nit** — style, single-letter names outside loops, missing docstring contracts on public APIs.
+
+Every finding carries its quoted code or observed behavior and a named fix — that is what lets the author contest it; with no quote or no fix it is not a finding, so drop it. Report only counted findings: never an estimated quality score, "X% cleaner," or a maintainability index — no baseline exists, so the number would be invented.
 
 ## Pre-flight: is this a refactor or a rewrite?
 
@@ -112,7 +114,7 @@ Pull [dry-kiss-yagni.md](dry-kiss-yagni.md) if needed.
 Pull [ai-failure-modes.md](ai-failure-modes.md) for every check here.
 
 1. Any catch-all error handler that swallows without recovery? Critical.
-2. Any defensive guards for types/values the system already excludes?
+2. Any defensive guards for types/values the system already excludes — *inside* a trust boundary? (Validation of external or untrusted input at the boundary is not a defensive guard; do not flag it.)
 3. Any premature abstraction — interface or factory with one implementation?
 4. Any comment pollution — line-by-line restating, step-number scaffolding, or documentation comments that paraphrase signatures?
 5. Any duplication of logic that already exists in a helper in the same repo?
@@ -125,18 +127,21 @@ Pull [ai-failure-modes.md](ai-failure-modes.md) for every check here.
 12. **Any hardcoded "success" returns, mock fixtures, fake values in production code?** Critical.
 13. Any code that looks copy-pasted from a similar function (off-by-one, wrong null semantic)?
 14. Any speculative configurability — flags, env vars, optional params without callers?
+15. **Any "simplification" that deleted boundary validation, or a cleanup path (`finally`/`close`/`defer`/context-manager) the contract relied on?** That's a behavior change, not cleanup. Critical.
 
 ## What to do with each finding
 
-For each item flagged:
-1. Quote the offending code (file + line range).
-2. Name the principle or AI failure mode in `references/`.
-3. Propose a concrete fix — code if the change is small, prose if it's structural.
-4. Assign severity (Critical / Important / Nit).
+A finding must name its fix — a code change OR a specific structural action. "Nameable" is the bar, not "codeable." No named fix means it stays vague unease, not a finding — drop it.
+
+- ❌ "This error handling could perhaps be more specific." (no named replacement — drop it)
+- ✅ "`L42 except Exception` swallows the DB error → catch `OperationalError`, let the rest propagate."
+- ✅ "`L88–140 processOrder` mixes validation, pricing, persistence → extract `validate()` and `price()`."
+
+For each finding: quote the offending code (file + line), name the principle or AI failure mode in `references/`, give the fix (code if small, a named structural action if not), and assign severity (Critical / Important / Nit).
 
 ## When the review is contested
 
-If the user pushes back on a finding, cite the source from the relevant `references/` file. The rules trace to primary sources (Uncle Bob, Fowler, Hunt & Thomas, McCabe, Metz) and published 2024–2026 research on LLM code generation. If the user has a context-specific reason to override (e.g., a 7-parameter constructor for a config DTO is acceptable), document the override in a code comment that names the principle and the reason — and downgrade the finding to "Documented exception" rather than removing it.
+If the user pushes back on a finding, cite the source from the relevant `references/` file. The rules trace to primary sources (Uncle Bob, Fowler, Hunt & Thomas, McCabe, Metz) and published 2024–2026 research on LLM code generation. If the user has a context-specific reason to override, record it as an inline comment that names **the principle, the reason, and a revisit trigger** — e.g. `// clean-code exception: 4-arg ceiling — config DTO, all fields required at construction; revisit when an optional field appears.` (the prefix is illustrative, not a required tag). On a later pass a well-formed marker downgrades the finding to *Documented exception* — don't re-flag it; a marker with **no revisit trigger is itself a finding**, since an exception with no exit is just deferred debt. Name the principle, not a rule number — a number is meaningless to a future reader.
 
 ## What this review does not do
 

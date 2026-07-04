@@ -30,7 +30,7 @@ Use data that exposes the API's shape honestly: realistic field names, plausible
 
 - Placeholders that cannot be mistaken for real values: `YOUR_API_KEY`, `example.com`, RFC 5737 IPs (`192.0.2.x`), `sk_test_…` style markers only when the provider defines them.
 - Never paste real-looking tokens — even invented ones train readers to paste theirs, and secret scanners will flag the repo.
-- Auth setup goes in one place and is linked, not repeated with variations in every sample (Rule 8: repetition drifts).
+- Auth setup goes in one place and is linked, not repeated with variations in every sample.
 
 ## Error-path examples
 

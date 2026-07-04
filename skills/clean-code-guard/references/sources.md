@@ -33,6 +33,12 @@ names instead of inline URLs so rule guidance stays readable.
 - **Claude Code issue 6984, mock data generation bias**: https://github.com/anthropics/claude-code/issues/6984
 - **Karpathy on exception suppression**: https://x.com/karpathy/status/1976077806443569355
 - **Code Needs Comments**: https://arxiv.org/html/2402.13013v1
+- **Evaluating the Code Quality of AI-Assisted Code Generation Tools (Copilot, CodeWhisperer, ChatGPT)**: https://arxiv.org/abs/2304.10778
+- **On Mitigating Code LLM Hallucinations with API Documentation**: https://arxiv.org/abs/2407.09726
+- **LLM Hallucinations in Practical Code Generation (taxonomy)**: https://arxiv.org/abs/2409.20550
+- **When Names Disappear: Revealing What LLMs Actually Understand About Code**: https://arxiv.org/abs/2510.03178
+- **Neural Variable Name Repair**: https://arxiv.org/abs/2512.01141
+- **Vibe Coding in Practice**: https://arxiv.org/abs/2512.11922
 
 ## Metrics And Verification
 

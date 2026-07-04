@@ -1,11 +1,11 @@
 ---
 name: clean-code-guard
-description: Review generated or changed production code before it ships, using Clean Code, SOLID, DRY, KISS, YAGNI, and LLM-specific failure-mode checks in any programming language. Best used reactively after an agent writes, edits, refactors, or fixes code, before presenting, committing, or merging the result. Use when the user asks "review this PR", "is this safe to merge?", "make this cleaner", "audit this code", "refactor this", "fix this bug", or after a coding agent produced implementation code. Can also guide writing when explicitly invoked before a risky edit. DO NOT USE for factual/conceptual questions, CI/tooling config, git workflow, running/debugging tests, pure architecture discussion, prose writing, data analysis, or test-code review (use test-guard).
+description: Review generated or changed production code before it ships, using Clean Code, SOLID, DRY, KISS, YAGNI, and LLM-specific failure-mode checks in any programming language. Best used reactively after an agent writes, edits, refactors, or fixes code, before presenting, committing, or merging the result. Use when the user asks "review this PR", "is this safe to merge?", "make this cleaner", "audit this code", "refactor this", "fix this bug", or after a coding agent produced implementation code. Can also guide writing when explicitly invoked before a risky edit. Invoke it on your own initiative the moment you finish writing, editing, or refactoring non-trivial production code, before presenting or committing — don't wait to be asked. DO NOT USE for factual/conceptual questions, CI/tooling config, git workflow, running/debugging tests, pure architecture discussion, prose writing, data analysis, or test-code review (use test-guard).
 ---
 
 # clean-code-guard
 
-You are reviewing generated or changed code before it ships. Apply the rules below as a guard pass after the first implementation pass. If the user explicitly invokes this skill before writing code, use the same rules while writing and still run the self-check before delivery.
+You are reviewing generated or changed code before it ships. Apply the rules below as a guard pass after the first implementation pass — and once this skill is active, keep applying it to every later code change in the same session, re-running the self-check before delivery after each edit rather than reverting to unguarded output because the skill loaded earlier. If the user explicitly invokes this skill before writing code, use the same rules while writing and still run the self-check before delivery.
 
 ## Compatibility
 
@@ -20,7 +20,7 @@ for the judgement layer around code quality and review.
 
 ## How to use this skill
 
-This skill has two modes — pick based on the user's request.
+This skill has three modes — pick based on the user's request.
 
 **Guard-pass mode** (recommended): after code has been generated, edited, refactored, or fixed, check the diff or target files against the *Always-applied imperatives* below. Fix violations before presenting, committing, or merging the work.
 
@@ -28,7 +28,7 @@ This skill has two modes — pick based on the user's request.
 
 **Review mode** (triggered when the user asks you to review, audit, critique, or rate code): walk [references/review-checklist.md](references/review-checklist.md) against the target file(s) and produce a structured findings report. Do not edit code in review mode unless asked.
 
-For both modes, the rule bodies live in [references/](references/). Read the relevant reference file when:
+Across all three modes, the rule bodies live in [references/](references/). Read the relevant reference file when:
 - You hit a rule you don't fully remember the reasoning for.
 - The user pushes back on a rule and you need the source citation.
 - You're in review mode and need the full checklist.
@@ -108,23 +108,33 @@ These are the rules to follow on every code change. They are imperative, not sug
 ### AI-specific guardrails — the highest-leverage section
 
 15. **Never swallow errors with broad catch-all handling.** Catch only the specific error type you can recover from. If you cannot recover, let the error propagate. Returning null/none/empty success from a catch handler is forbidden unless the function contract documents that behavior. (Karpathy)
-16. **No defensive guards for impossible cases.** Do not add null checks or runtime type checks for values whose declared type or caller contract already excludes that case. Trust the contract. (arXiv 2409.19182)
+16. **Guard the boundary; trust the contract.** At a trust boundary — external input, request/API payloads, deserialized or cross-process data, anything from an untrusted source — validate, even when the happy path looks fine. *Inside* the boundary, do not add null checks or runtime type checks for values whose declared type or caller contract already excludes that case. The test for a guard is not "could this theoretically be wrong" but "can untrusted data reach here." (arXiv 2409.19182)
 17. **Verify every import and external call.** Before calling a method on a library, confirm it exists in the version installed (read the package, check the lockfile, or import and inspect). Do not generate code based on what the API "should" look like. (USENIX Security '25)
 18. **No hardcoded "success" returns or mock fixtures in production code.** Never return `{"status": "ok", ...}` or canned data from a function whose spec says it does real work. If you cannot implement, fail explicitly with the language's unimplemented or unsupported-operation mechanism and say so. Never disable, skip, or weaken a test to make it pass. (Fowler, Claude Code issue #6984)
 19. **Re-derive, do not copy from similar.** When tempted to copy a function and modify it, stop. Re-derive from the spec. Off-by-one and wrong-null-semantic bugs almost always enter through copy-from-similar. (arXiv 2411.01414)
 20. **Enumerate boundary cases before writing them.** For any range, off-by-one, null/empty/one/many, even/odd, or unicode/byte boundary, write the case list in a comment first. Cover each case in code before moving on.
 21. **Strip dead code before delivery.** Run a linter or grep pass for unused imports, unused symbols, unreachable branches, and "just in case" exports. Remove them. A function that nothing calls today does not get to live for "someday."
 22. **Read before write.** Before writing in an unfamiliar repo, read the file you'll edit, one neighbor, and any project rules file (CLAUDE.md, AGENTS.md, README's "conventions" section). Use the project's existing helpers, error types, and logging.
+23. **No new dependency for what a few lines cover.** Before adding a package, check the standard library, the already-installed dependencies, and whether a few lines of local code do the job. A new dependency is permanent maintenance and supply-chain surface; add one only when it owns real complexity you should not re-implement (cryptography, parsing, time zones — illustrative, not exhaustive), never to save ten lines. See [references/dry-kiss-yagni.md](references/dry-kiss-yagni.md).
+
+### The floor — never cut these for simplicity
+
+Rule 16 trusts the contract *inside* the boundary; the items below stay even while you strip speculation (14), defensive guards (16), and dead code (21). Removing one of these is a behavior change, not a cleanup — keep it, or flag it and ask.
+
+- **Validation and sanitization at every trust boundary** — external input, request/API payloads, deserialized or cross-process data.
+- **Error handling that prevents data loss.**
+- **Security measures** — authorization, output escaping, parameterized queries, secret handling.
+- **Behavior the user explicitly requested.** Idly mentioned ≠ requested, but do not drop what was asked for.
 
 ### Refactoring discipline
 
-23. **Preserve observable behavior when refactoring.** When the user asks you to clean up, simplify, or refactor existing code, do not change the contract — same inputs produce the same outputs, same exceptions raised, same side effects, same ordering guarantees. If you spot a bug while refactoring, flag it separately and ask before changing it. Refactoring is defined as *"a change made to the internal structure of software to make it easier to understand and cheaper to modify without changing its observable behavior"* (Fowler, *Refactoring*). Bug fixes and refactors are two operations — never bundle them in a single change.
+24. **Preserve observable behavior when refactoring.** When the user asks you to clean up, simplify, or refactor existing code, do not change the contract — same inputs produce the same outputs, same exceptions raised, same side effects, same ordering guarantees. If you spot a bug while refactoring, flag it separately and ask before changing it. Refactoring is defined as *"a change made to the internal structure of software to make it easier to understand and cheaper to modify without changing its observable behavior"* (Fowler, *Refactoring*). Bug fixes and refactors are two operations — never bundle them in a single change.
 
 ## Self-check before delivery
 
 Before you show the user the code you wrote or edited:
 
-1. Walk imperatives 1–23 against your diff. Fix every violation.
+1. Walk imperatives 1–24 against your diff. Fix every violation.
 2. For new functions, count: lines ≤ 20? params ≤ 4? complexity feels ≤ 10? names reveal intent?
 3. For new comments, ask: does this explain *why*? If it explains *what*, delete it.
 4. For new error handling: is the caught error type specific? Does the handler do something other than silently return?
@@ -135,9 +145,11 @@ Before you show the user the code you wrote or edited:
 
 If you cannot answer yes to every check, fix before shipping.
 
+After the guard pass, surface it so the user can see it ran (guard-pass and live modes — review mode reports through its own findings format). List each fix as `<file>[:<line>] — <what changed>`, omitting the line number if it is unstable, then close with one line: `clean-code-guard: <N> fixed, <M> flagged for author` — or `clean-code-guard: clean` if nothing triggered. Report only changes you actually made; never estimate a quality score or percentage — no baseline exists, so such a number would be invented. This reports the pass; it does not block presenting or committing.
+
 ## When the user pushes back on a rule
 
-Refer them to the source name in the relevant [references/](references/) file and use [references/sources.md](references/sources.md) only when the URL is needed. The rules are defensible — they come from primary sources (Uncle Bob, Fowler, Hunt & Thomas, McCabe, Metz) and from published 2024–2026 research on LLM code generation. If the user has a context-specific reason to override (e.g., a constructor genuinely needs 8 params for a config DTO), document the exception in a code comment that includes the principle being overridden and the reason.
+Refer them to the source name in the relevant [references/](references/) file and use [references/sources.md](references/sources.md) only when the URL is needed. The rules are defensible — they come from primary sources (Uncle Bob, Fowler, Hunt & Thomas, McCabe, Metz) and from published 2024–2026 research on LLM code generation. If the user has a context-specific reason to override (e.g., a constructor genuinely needs 8 params for a config DTO), document the exception in a code comment that names the principle being overridden, the reason, and a revisit trigger — the condition under which it should be reconsidered. An exception comment with no revisit trigger is itself a finding on the next pass: a tradeoff with no exit is just deferred debt.
 
 ## Troubleshooting
 

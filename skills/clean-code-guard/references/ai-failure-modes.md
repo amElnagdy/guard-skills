@@ -1,6 +1,6 @@
 # AI Failure Modes — the unique value of this skill
 
-This file catalogs 14 systematic ways LLMs produce bad code, each backed by published research or widely-documented engineering observations. Read this first if you are an AI agent applying this skill — these are the patterns most likely to enter your own output.
+This file catalogs 15 systematic ways LLMs produce bad code, each backed by published research or widely-documented engineering observations. Read this first if you are an AI agent applying this skill — these are the patterns most likely to enter your own output.
 
 For each failure mode you get:
 - **Pattern:** one-line description.
@@ -24,6 +24,7 @@ For each failure mode you get:
 - 12. Declares success with mock fallbacks in production code
 - 13. Plausible-but-wrong code
 - 14. YAGNI violations through speculative configurability
+- 15. New dependency for trivial work
 - Cross-cutting observation
 - Where this skill differs from generic clean-code rules
 
@@ -78,7 +79,7 @@ total(orderItems):
   return sum(order.amount for each order in orderItems)
 ```
 
-**Rule.** Do not add null checks, runtime type checks, or truthiness checks for values whose type annotation or caller contract already excludes that case. Trust the contract.
+**Rule.** Do not add null checks, runtime type checks, or truthiness checks for values whose type annotation or caller contract already excludes that case. Trust the contract. This applies *inside* a trust boundary; at the boundary itself — external input, payloads, deserialized or cross-process data — validation is required, not defensive bloat.
 
 ---
 
@@ -191,9 +192,9 @@ doublePrices(orders):
 
 **Pattern.** A single function mixing I/O, business logic, formatting, and side effects — often because the prompt asked for several things in one breath.
 
-**Source.** arXiv 2512.11922, "Vibe Coding in Practice" — canonical symptom is "a function 300 lines long, handling four unrelated concerns, assembled from several AI-generated fragments." GitClear 2025 — file size 142→267 LoC, cyclomatic complexity 4.2→8.1 in AI-assisted commits. arXiv 2304.10778 compares Copilot/CodeWhisperer/ChatGPT quality.
+**Source.** arXiv 2512.11922, "Vibe Coding in Practice" — documents how AI-assisted "vibe coding" accumulates technical debt through architectural inconsistencies; the canonical symptom is a single function hundreds of lines long handling several unrelated concerns, assembled from multiple AI-generated fragments. GitClear 2025 — file size 142→267 LoC, cyclomatic complexity 4.2→8.1 in AI-assisted commits. arXiv 2304.10778 compares Copilot/CodeWhisperer/ChatGPT quality.
 
-**Rule.** A function does one thing. If the prompt asks for N things, produce N functions and a small composer. Hard caps: ~50 lines, ≤4 parameters, cyclomatic complexity ≤8 — refactor before exceeding.
+**Rule.** A function does one thing. If the prompt asks for N things, produce N functions and a small composer. Refactor ceiling: ~50 lines (target ≤20), ≤4 parameters, cyclomatic complexity ≤10 — refactor before exceeding.
 
 ---
 
@@ -313,10 +314,32 @@ renderInvoice(invoice)
 
 ---
 
+## 15. New dependency for trivial work
+
+**Pattern.** Adding a third-party package to do what the standard library, an already-installed dependency, or a few lines of code already cover — a micro-dependency for a one-line helper, or a heavy library pulled in for a single function.
+
+**Source.** Field reports on AI over-building (Fowler's overeagerness pattern) and long-standing supply-chain guidance: every dependency is permanent maintenance surface — version churn, transitive vulnerabilities, audit and licensing weight — that a small local function never carries. Same emit-more bias as modes 3 and 14.
+
+**Bad:**
+```text
+# add a package to sum a column of numbers
+import stats_helpers
+total = stats_helpers.sum_column(rows, "amount")
+```
+
+**Good:**
+```text
+total = sum(row.amount for row in rows)
+```
+
+**Rule.** Before adding a package, check the stdlib, the already-installed dependencies, and whether a few lines solve it. Add a dependency only when it owns real complexity you should not re-implement (cryptography, parsing, time zones — illustrative, not exhaustive), never to avoid a short function. This is the inverse of mode 5 and of [dry-kiss-yagni.md](dry-kiss-yagni.md) ranked item 8: don't re-implement what the platform gives you — and don't import what a few lines already cover.
+
+---
+
 ## Cross-cutting observation
 
-Eight of the 14 failure modes (1, 2, 3, 9, 12, 14, plus pieces of 8 and 11) trace to one root cause: **the model is biased toward emitting more code, more parameters, more guards, more abstractions** — anything but the minimum required by the spec. The cure is restraint, not knowledge. Before writing each line, ask: *does the spec require this, today?* If no, do not write it.
+Nine of the 15 failure modes (1, 2, 3, 9, 12, 14, 15, plus pieces of 8 and 11) trace to one root cause: **the model is biased toward emitting more code, more parameters, more guards, more abstractions** — anything but the minimum required by the spec. The cure is restraint, not knowledge. Before writing each line, ask: *does the spec require this, today?* If no, do not write it.
 
 ## Where this skill differs from generic clean-code rules
 
-Sections in [naming-and-functions.md](naming-and-functions.md), [solid.md](solid.md), and [dry-kiss-yagni.md](dry-kiss-yagni.md) cover the classic principles. They are necessary but not sufficient — an LLM that "knows" SOLID can still produce code that fails for the reasons in this file. The 14 patterns above are the high-leverage check. Walk them before delivery.
+Sections in [naming-and-functions.md](naming-and-functions.md), [solid.md](solid.md), and [dry-kiss-yagni.md](dry-kiss-yagni.md) cover the classic principles. They are necessary but not sufficient — an LLM that "knows" SOLID can still produce code that fails for the reasons in this file. The 15 patterns above are the high-leverage check. Walk them before delivery.
