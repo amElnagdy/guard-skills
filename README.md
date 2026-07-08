@@ -174,3 +174,16 @@ This lists every skill the CLI discovers by scanning `skills/`, with its referen
 ## License
 
 MIT — see [LICENSE](LICENSE).
+
+## Contributing
+
+We welcome contributions to the guard-skills project! If you would like to contribute, please follow these guidelines:
+
+1. **Fork the repository**: Click on the 'Fork' button at the top right of the page.
+2. **Create a new branch**: Use a descriptive name for your branch, e.g., `fix-typo` or `add-new-skill`.
+3. **Make your changes**: Implement your changes in your branch.
+4. **Write tests**: Ensure that your changes are covered by tests and that all tests pass.
+5. **Update documentation**: If your changes affect the documentation, please update it accordingly.
+6. **Open a pull request**: Go to the 'Pull requests' tab and click on 'New pull request'. Provide a clear description of your changes and why they are needed.
+
+For any questions or discussions, feel free to open an issue or reach out to the maintainers.
