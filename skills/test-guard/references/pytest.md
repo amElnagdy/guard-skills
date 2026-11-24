@@ -63,3 +63,4 @@ Use a fixture that applies real migrations (e.g., a session-scoped test database
 - `@patch` stacks three or more deep — the test is coupled to implementation; restructure
 - Asserting log output via `caplog` for messages no caller parses — Rule 4 violation
 - Fixtures that build mocks of project classes — Rule 8 violation, make the fixture build real objects
+- `mock.ANY` in `assert_called_with(...)`, or `assert_called()` as the only check on a boundary call whose arguments are the behavior — Rule 2; use `assert_called_once_with(<real values>)`

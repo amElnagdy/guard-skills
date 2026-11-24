@@ -50,10 +50,30 @@ Mock only at system boundaries: network and HTTP calls, LLM APIs, databases, fil
 
 When you mock a boundary, assert what the caller *does with the response*, not that the mock received specific arguments.
 
+When the outgoing call *is* the behavior (the amount sent to the payment API, the row written to the database), assert it with the real values the test built. Never use a match-anything matcher (`mock.ANY`, `expect.anything()`, `expect.any(Object)`, Mockito `any()`, `$this->anything()`) in a stub or a call assertion: it passes when the code sends the wrong value. A bare "was called" check (`assert_called()`, `toHaveBeenCalled()`) has the same blind spot when it is the only check on that call.
+
 ### Rule 3: One scenario per test, data-driven for variants
 If two or more tests share identical setup and differ only in input/output values, merge them into one data-driven test (`@pytest.mark.parametrize`, PHPUnit `#[DataProvider]`, Jest `test.each`).
 
 **When separate tests ARE correct:** different setup, different assertions, different mock configurations, or genuinely different scenarios that happen to exercise the same function.
+
+**Pick the rows that catch bugs.** Mid-range values pass even when the code is wrong, so choose cases at the points where behavior changes:
+
+- **Boundaries:** for a limit, test the limit and its immediate neighbor (`>= 10` → 9 and 10). Swapping `>=` for `>`, or an off-by-one limit, only shows up there.
+- **Compound conditions (MC/DC):** for `a and b` or `a or b`, for each condition include a pair of cases where only that condition changes and the result changes with it. An all-true case plus an all-false case shows neither condition matters on its own; those two tests still pass if `or` becomes `and`.
+
+```python
+# free shipping for members OR orders of 200 and up
+@pytest.mark.parametrize(("member", "total", "free"), [
+    (False, 199, False),  # neither
+    (True, 199, True),    # only member changed → result changed
+    (False, 200, True),   # only total changed → result changed (and 200 is the boundary)
+])
+def test_free_shipping_for_members_or_large_orders(member, total, free):
+    assert free_shipping(member, total) is free
+```
+
+Source: Hayhurst et al., *A Practical Tutorial on Modified Condition/Decision Coverage*, NASA TM-2001-210876.
 
 ### Rule 4: Every test must justify its existence
 Ask: "What bug does this catch that no other test catches?" Delete tests that only catch typos, verify default values of data classes, or test trivial pass-through logic.
@@ -115,5 +135,5 @@ Not all violations are equal. Use judgment:
 
 - It does not run tests. Use the project's test runner for that.
 - It does not enforce code style — that's the linter's job.
-- It does not decide *what* to test — only *how* to test it.
+- It does not decide *what* behavior to test — only *how* to test it, including which input values give a data-driven test its bug-catching power.
 - It does not flag pre-existing violations in files you're not touching, unless asked to audit.

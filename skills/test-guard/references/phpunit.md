@@ -16,6 +16,7 @@ Unjustified mocks:
 - Mockery/Prophecy doubles for the project's own value objects, DTOs, or entities — construct real instances (Rule 8)
 - Mocking internal services just to isolate a class — if wiring is painful, fix the constructor, don't fake the collaborator
 - Partial mocks of the class under test — you are no longer testing the class
+- `$this->anything()`, Mockery `::any()` / `withAnyArgs()` on a boundary call whose arguments are the behavior — pass the real values to `with()` (Rule 2)
 
 ## Rule 3: Data providers
 

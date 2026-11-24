@@ -16,6 +16,7 @@ Unjustified mocks:
 - `jest.mock('../utils/helpers')` — mocking your own internal module to isolate a "unit" (Rule 2)
 - Mocking a class's private method via prototype patching (Rule 1)
 - Hand-built object literals pretending to be domain entities when a real constructor or factory exists (Rule 8)
+- `expect.anything()` / `expect.any(Object)` inside `toHaveBeenCalledWith(...)`, or a bare `toHaveBeenCalled()` on a boundary call whose arguments are the behavior — assert the real values (Rule 2)
 
 ## Rule 3: test.each
 
