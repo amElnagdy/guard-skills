@@ -89,7 +89,7 @@ Use $wp-guard while implementing this REST endpoint, then self-check before deli
 
 ### clean-code-guard
 
-Applies Clean Code, SOLID, DRY/KISS/YAGNI to generated or changed code in any language, plus an AI-specific layer most rule packs miss: catch-all error swallowing, hardcoded "success" returns, hallucinated APIs, premature abstraction, comment pollution, and copy-from-similar bugs.
+Applies Clean Code, SOLID, DRY/KISS/YAGNI to generated or changed code in any language, plus an AI-specific layer most rule packs miss: catch-all error swallowing, hardcoded "success" returns, hallucinated APIs, premature abstraction, comment pollution, copy-from-similar bugs, and business rules written at the call site instead of in the code that owns the data (Tell, Don't Ask, Law of Demeter).
 
 Why the AI layer matters: the skill references published research on duplication growth, package hallucination, and agents declaring success despite failed tests.
 

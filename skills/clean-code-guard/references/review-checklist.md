@@ -9,7 +9,7 @@ When the user asks you to **review, audit, critique, or rate code** (rather than
 - Walk order
   - Section A: naming and functions
   - Section B: comments and formatting
-  - Section C: SOLID
+  - Section C: SOLID and cohesion
   - Section D: DRY, KISS, YAGNI
   - Section E: AI failure modes
 - What to do with each finding
@@ -47,7 +47,7 @@ Counts: <N> critical, <M> important, <K> nits  (must equal the findings listed b
 One line per section: the findings it produced, or `clean` (walked it, found nothing). A blank section is an unbacked claim, not a pass — fill it before delivering.
 - Section A (naming & functions): <findings, or `clean`>
 - Section B (comments & formatting): <findings, or `clean`>
-- Section C (SOLID): <findings, or `clean`>
+- Section C (SOLID & cohesion): <findings, or `clean`>
 - Section D (DRY/KISS/YAGNI): <findings, or `clean`>
 - Section E (AI failure modes): <findings, or `clean`>
 ```
@@ -90,15 +90,18 @@ Pull [comments-and-formatting.md](comments-and-formatting.md) if needed.
 4. Flag docstrings that restate the signature with no contract.
 5. Flag style inconsistencies with the surrounding file (casing, quoting, import order).
 
-### Section C — SOLID
+### Section C — SOLID and cohesion
 
-Pull [solid.md](solid.md) if needed.
+Pull [solid.md](solid.md) and [cohesion.md](cohesion.md) if needed.
 
 1. (SRP) Any class with methods serving two unrelated stakeholder groups?
 2. (OCP) Conditional or switch dispatch on a type tag that grew with the codebase?
 3. (LSP) Any subclass with an unimplemented/unsupported-operation failure, strengthened preconditions, or weakened postconditions?
 4. (ISP) Any interface where the concrete client uses only a subset of methods?
 5. (DIP) High-level module importing a concrete from a low-level module? Abstractions living in the same package as the concrete?
+6. (Tell, Don't Ask) A business decision built from another object's fields that the owner could answer with one method?
+7. (Demeter) A chain two or more levels deep into foreign state (`a.b.c`, `a["b"]["c"]`, `a?.b?.c`) feeding a decision or calculation? Output-only chains are a Nit; fluent APIs and builders are not findings.
+8. (Feature Envy) A total, discount, or derivation computed from another owner's fields or collection instead of asked of the owner?
 
 ### Section D — DRY, KISS, YAGNI
 
