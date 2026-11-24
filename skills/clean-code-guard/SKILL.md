@@ -38,6 +38,7 @@ The reference files are:
 - [references/naming-and-functions.md](references/naming-and-functions.md) — names, function size, parameters, command/query separation.
 - [references/comments-and-formatting.md](references/comments-and-formatting.md) — when to comment, when to delete, matching neighbor style.
 - [references/solid.md](references/solid.md) — SRP, OCP, LSP, ISP, DIP with the modern phrasings and detection smells.
+- [references/cohesion.md](references/cohesion.md) — Tell, Don't Ask, Law of Demeter, and Feature Envy: business rules that leak out of the code that owns the data.
 - [references/dry-kiss-yagni.md](references/dry-kiss-yagni.md) — knowledge vs code duplication, Sandi Metz's re-inline rule, McCabe complexity, Fowler's YAGNI cost categories.
 - [references/ai-failure-modes.md](references/ai-failure-modes.md) — the 14 systematic ways LLMs produce bad code. **Read this one first if you are an AI agent reading this skill.** It is the highest-leverage file in the skill.
 - [references/review-checklist.md](references/review-checklist.md) — structured walk-through for review mode.
@@ -130,11 +131,15 @@ Rule 16 trusts the contract *inside* the boundary; the items below stay even whi
 
 24. **Preserve observable behavior when refactoring.** When the user asks you to clean up, simplify, or refactor existing code, do not change the contract — same inputs produce the same outputs, same exceptions raised, same side effects, same ordering guarantees. If you spot a bug while refactoring, flag it separately and ask before changing it. Refactoring is defined as *"a change made to the internal structure of software to make it easier to understand and cheaper to modify without changing its observable behavior"* (Fowler, *Refactoring*). Bug fixes and refactors are two operations — never bundle them in a single change.
 
+### Cohesion
+
+25. **Tell, don't ask.** A business decision about some data belongs with the code that owns that data. Do not read another object's fields to decide or calculate something it could answer itself: add the method to the owner and send it one message (`subscription.in_trial(now)`, not a date comparison on `subscription.plan.trial_days` in the caller). Do not chain through more than one level of foreign state to feed a decision. Fluent APIs, builders, and output DTOs that only re-expose data are exempt. See [references/cohesion.md](references/cohesion.md). (Fowler, "TellDontAsk"; Law of Demeter)
+
 ## Self-check before delivery
 
 Before you show the user the code you wrote or edited:
 
-1. Walk imperatives 1–24 against your diff. Fix every violation.
+1. Walk imperatives 1–25 against your diff. Fix every violation.
 2. For new functions, count: lines ≤ 20? params ≤ 4? complexity feels ≤ 10? names reveal intent?
 3. For new comments, ask: does this explain *why*? If it explains *what*, delete it.
 4. For new error handling: is the caught error type specific? Does the handler do something other than silently return?

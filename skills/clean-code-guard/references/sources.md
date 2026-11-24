@@ -21,6 +21,8 @@ names instead of inline URLs so rule guidance stays readable.
 - **SRP, Uncle Bob**: https://blog.cleancoder.com/uncle-bob/2014/05/08/SingleReponsibilityPrinciple.html
 - **OCP, Uncle Bob**: https://blog.cleancoder.com/uncle-bob/2014/05/12/TheOpenClosedPrinciple.html
 - **LSP, Liskov/Wing paper mirror**: https://www.labri.fr/perso/clement/enseignements/ao/LSP.pdf
+- **TellDontAsk, Fowler**: https://martinfowler.com/bliki/TellDontAsk.html
+- **Law of Demeter, Lieberherr (Northeastern)**: https://www.ccs.neu.edu/home/lieber/LoD.html
 - **DIP, Object Mentor archive**: https://web.archive.org/web/20150924054349/http://www.objectmentor.com/resources/articles/Principles_and_Patterns.pdf
 
 ## LLM Code-Generation Research And Field Reports
