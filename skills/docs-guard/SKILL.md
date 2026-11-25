@@ -5,6 +5,23 @@ description: "Review generated or changed documentation before it ships — READ
 
 # Docs Guard
 
+## Examples
+
+- **Example 1:** To review the README documentation, run:
+  ```bash
+  docs-guard README.md
+  ```
+
+- **Example 2:** To check API documentation:
+  ```bash
+  docs-guard api_reference.md
+  ```
+
+- **Example 3:** For validating changelog entries:
+  ```bash
+  docs-guard CHANGELOG.md
+  ```
+
 You are reviewing generated or changed documentation before it ships. Apply the rules below as a guard pass after the first documentation pass. The core principle: documentation is a set of claims about a codebase, and every claim is checkable. Your job is to check them.
 
 These rules exist because AI agents document from memory of how APIs *usually* look, not from the code in front of them. Published research: half of AI answers to programming questions contain incorrect information, and models produce valid invocations for infrequent APIs barely a third of the time — yet the prose sounds authoritative either way. Readers cannot tell verified docs from hallucinated docs. You can, because you have the source.
