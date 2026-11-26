@@ -29,7 +29,7 @@ add_action( 'woocommerce_checkout_process', function () {
 	$vat = isset( $_POST['ncs_vat'] ) ? sanitize_text_field( wp_unslash( $_POST['ncs_vat'] ) ) : '';
 
 	if ( '' !== $vat && ! ncs_vat_is_valid( $vat ) ) {
-		wc_add_notice( __( 'Please enter a valid VAT number.', 'ncs-checkout' ), 'error' );
+		wc_add_notice( __( 'Please enter a valid VAT number. It should be in the format: XX123456789.', 'ncs-checkout' ), 'error' );
 	}
 } );
 ```
